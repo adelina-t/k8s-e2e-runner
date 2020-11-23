@@ -111,20 +111,6 @@ data:
         mountPath: /root/.kube
         readOnly: true
     - labels:
-        preset-kind: "true"
-      volumes:
-      - name: dind-storage
-        emptyDir: {}
-      - name: libmodules
-        hostPath:
-          path: /lib/modules
-      volumeMounts:
-      - mountPath: /var/lib/docker
-        name: dind-storage
-      - mountPath: /lib/modules
-        name: libmodules
-        readOnly: true
-    - labels:
         preset-windows-private-registry-cred: "true"
       env:
       - name: DOCKER_CONFIG_FILE
@@ -160,16 +146,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -198,16 +184,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -236,16 +222,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -277,16 +263,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -318,16 +304,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -359,16 +345,16 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -400,17 +386,17 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
         preset-windows-private-registry-cred: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
@@ -442,17 +428,17 @@ data:
         preset-ssh-key: "true"
         preset-prod-azure-account: "true"
         preset-service-account: "true"
-        preset-kind: "true"
         preset-windows-private-registry-cred: "true"
       spec:
         containers:
-        - image: e2eteam/k8s-e2e-runner:latest
+        - image: ionutbalutoiu/k8s-e2e-runner:latest
           imagePullPolicy: Always
           namespace: test-pods
           securityContext:
             privileged: true
           args:
-            - "--job-repo=https://github.com/e2e-win/k8s-e2e-runner"
+            - "--job-repo=https://github.com/ionutbalutoiu/k8s-e2e-runner"
+            - "--job-branch=testing"
             - "--job-config=https://raw.githubusercontent.com/e2e-win/k8s-e2e-runner/master/e2e-runner/config_capz_flannel.txt"
             - "--service-account=$(GCLOUD_SERVICE_ACCOUNT)"
             - "--gs=$(GCLOUD_UPLOAD_BUCKET)"
