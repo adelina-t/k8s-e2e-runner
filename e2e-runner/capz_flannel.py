@@ -24,7 +24,7 @@ p.add("--flannel-mode", default=constants.FLANNEL_MODE_OVERLAY,
                constants.FLANNEL_MODE_L2BRIDGE],
       help="Flannel mode used by the CI.")
 p.add("--base-container-image-tag",
-      default="ltsc2019", choices=["ltsc2019", "1909", "2004"],
+      default="ltsc2019", choices=["ltsc2019", "1903", "1909", "2004"],
       help="The base container image used for the kube-proxy / flannel CNI. "
       "This needs to be adjusted depending on the Windows minion Azure image.")
 p.add("--kubernetes-version", default=constants.DEFAULT_KUBERNETES_VERSION,
@@ -269,8 +269,8 @@ class CapzFlannelCI(ci.CI):
             self.deployer.master_public_port)
 
         self._setup_kubeconfig()
-        if self.opts.container_runtime == "docker":
-            self._prepull_images()
+        #if self.opts.container_runtime == "docker":
+        #    self._prepull_images()
 
     def _prepull_images(self, timeout=3600):
         prepull_yaml_path = "/tmp/prepull-windows-images.yaml"

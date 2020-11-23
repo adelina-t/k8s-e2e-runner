@@ -121,7 +121,7 @@ class CI(object):
         cmd.append("--test")
         cmd.append("--dump=%s" % self.opts.log_path)
         cmd.append(
-            ('--test_args=--ginkgo.flakeAttempts=1 '
+            ('--test_args=--ginkgo.flakeAttempts=2 '
              '--num-nodes=2 --ginkgo.noColor '
              '--ginkgo.dryRun=%(dryRun)s '
              '--node-os-distro=windows '
