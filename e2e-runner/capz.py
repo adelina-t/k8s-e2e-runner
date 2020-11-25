@@ -34,10 +34,10 @@ p.add("--cluster-network-subnet",
       default="10.244.0.0/16",
       help="The cluster network subnet given to the cluster-api manifest")
 p.add("--location", help="The Azure location for the spawned resource.")
-p.add("--vnet-cidr-block", default="10.0.0.0/16", help="The vNET CIDR block.")
-p.add("--control-plane-subnet-cidr-block", default="10.0.0.0/24",
+p.add("--vnet-cidr-block", default="10.0.0.0/8", help="The vNET CIDR block.")
+p.add("--control-plane-subnet-cidr-block", default="10.0.0.0/16",
       help="The control plane subnet CIDR block.")
-p.add("--node-subnet-cidr-block", default="10.0.1.0/24",
+p.add("--node-subnet-cidr-block", default="10.1.0.0/16",
       help="The node subnet CIDR block.")
 p.add("--bootstrap-vm-size", default="Standard_D2s_v3",
       help="Size of the bootstrap VM")
@@ -112,6 +112,8 @@ class CAPZProvisioner(deployer.NoopDeployer):
 
         self._setup_infra()
         self._setup_bootstrap_vm()
+        self._setup_microk8s_kubeconfig()
+        self._wait_for_microk8s_api()
 
     @cached_property
     def master_public_address(self):
@@ -687,10 +689,22 @@ class CAPZProvisioner(deployer.NoopDeployer):
                 "address_prefixes": [self.vnet_cidr_block]
             }
         }
-        return self.network_client.virtual_networks.create_or_update(
-            self.cluster_name,
-            "{}-vnet".format(self.cluster_name),
-            vnet_params).result()
+        return utils.retry_on_error()(
+            self.network_client.virtual_networks.create_or_update)(
+                self.cluster_name,
+                "{}-vnet".format(self.cluster_name),
+                vnet_params).result()
+
+    def _create_node_route_table(self):
+        self.logging.info("Creating Azure node route table")
+        route_table_params = {
+            "location": self.azure_location,
+        }
+        return utils.retry_on_error()(
+            self.network_client.route_tables.create_or_update)(
+                self.cluster_name,
+                "{}-node-routetable".format(self.cluster_name),
+                route_table_params).result()
 
     def _create_control_plane_secgroup(self):
         secgroup_rules = [
@@ -744,25 +758,52 @@ class CAPZProvisioner(deployer.NoopDeployer):
     def _create_control_plane_subnet(self):
         self.logging.info("Creating Azure vNET control plane subnet")
         nsg = self._create_control_plane_secgroup()
+        route_table = self._create_node_route_table()
         subnet_params = {
             "address_prefix": self.control_plane_subnet_cidr_block,
             "network_security_group": {
                 "id": nsg.id
             },
+            "route_table": {
+                "id": route_table.id
+            },
         }
-        return self.network_client.subnets.create_or_update(
-            self.cluster_name,
-            "{}-vnet".format(self.cluster_name),
-            "{}-controlplane-subnet".format(self.cluster_name),
-            subnet_params).result()
+        return utils.retry_on_error()(
+            self.network_client.subnets.create_or_update)(
+                self.cluster_name,
+                "{}-vnet".format(self.cluster_name),
+                "{}-controlplane-subnet".format(self.cluster_name),
+                subnet_params).result()
+
+    def _create_node_secgroup(self):
+        secgroup_name = "{}-node-nsg".format(self.cluster_name)
+        secgroup_params = net_models.NetworkSecurityGroup(
+            name=secgroup_name,
+            location=self.azure_location)
+
+        return utils.retry_on_error()(
+            self.network_client.network_security_groups.create_or_update)(
+                self.cluster_name, secgroup_name, secgroup_params).result()
 
     def _create_node_subnet(self):
         self.logging.info("Creating Azure vNET node subnet")
-        return self.network_client.subnets.create_or_update(
-            self.cluster_name,
-            "{}-vnet".format(self.cluster_name),
-            "{}-node-subnet".format(self.cluster_name),
-            {"address_prefix": self.node_subnet_cidr_block}).result()
+        nsg = self._create_node_secgroup()
+        route_table = self._create_node_route_table()
+        subnet_params = {
+            "address_prefix": self.node_subnet_cidr_block,
+            "network_security_group": {
+                "id": nsg.id
+            },
+            "route_table": {
+                "id": route_table.id
+            },
+        }
+        return utils.retry_on_error()(
+            self.network_client.subnets.create_or_update)(
+                self.cluster_name,
+                "{}-vnet".format(self.cluster_name),
+                "{}-node-subnet".format(self.cluster_name),
+                subnet_params).result()
 
     @utils.retry_on_error()
     def _setup_infra(self):
@@ -1074,6 +1115,28 @@ class CAPZProvisioner(deployer.NoopDeployer):
                 break
 
             time.sleep(sleep_time)
+
+    def _wait_for_microk8s_api(self, timeout=600):
+        self.logging.info(
+            "Waiting up to %.2f minutes for ready MicroK8s", timeout / 60.0)
+
+        sleep_time = 10
+        start = time.time()
+        cmd = [self.kubectl, "get", "pods",
+               "--kubeconfig", self.microk8s_kubeconfig_path]
+        while True:
+            elapsed = time.time() - start
+            if elapsed > timeout:
+                err_msg = "MicroK8s was not ready within %s minutes." % (
+                    timeout / 60.0)
+                self.logging.error(err_msg)
+                raise Exception(err_msg)
+            try:
+                utils.run_shell_cmd(cmd, sensitive=True)
+            except Exception:
+                time.sleep(sleep_time)
+                continue
+            break
 
     @utils.retry_on_error(max_attempts=10, sleep_seconds=30)
     def _setup_capz_components(self):
